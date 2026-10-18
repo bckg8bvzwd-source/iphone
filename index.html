@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>My iPhone</title>
+
+<style>
+
+*{box-sizing:border-box}
+
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,Arial;background:#ddd}
+
+button,input{font:inherit}
+
+button{cursor:pointer}
+
+.phone{height:100dvh;max-width:430px;min-height:550px;margin:auto;position:relative;overflow:hidden;background:linear-gradient(145deg,#b7d8e9,#f6dce8,#b7c9ed)}
+
+.status{height:52px;position:absolute;top:0;left:0;right:0;padding:15px 25px;display:flex;justify-content:space-between;font-weight:bold;z-index:5;pointer-events:none}
+
+.island{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:100px;height:28px;border-radius:20px;background:#000}
+
+#screen{position:absolute;inset:0;padding-top:52px;padding-bottom:25px;overflow:hidden}
+
+.home{height:100%;padding:28px 22px;background:var(--wall);overflow:auto}
+
+.date{font-size:14px;color:#344}
+
+.time{font-size:50px;font-weight:300;margin:5px 0 25px}
+
+.apps{display:grid;grid-template-columns:repeat(4,1fr);gap:24px 10px;margin-top:30px}
+
+.app{border:0;background:transparent;display:flex;align-items:center;flex-direction:column;gap:6px;font-size:11px;color:#111;padding:0}
+
+.icon{height:56px;width:56px;border-radius:15px;display:grid;place-items:center;font-size:28px;box-shadow:0 2px 6px #0002}
+
+.green{background:#31c86b}.yellow{background:#fee500}.white{background:white}.blue{background:#1685ff}.pink{background:#ff8eb5}.purple{background:#a88be9}
+
+.dock{position:absolute;bottom:34px;left:14px;right:14px;border-radius:24px;padding:12px;background:#ffffff88;display:flex;justify-content:space-around}
+
+.dock button{border:0;background:transparent;font-size:26px}
+
+.panel{height:100%;display:flex;flex-direction:column;background:#f7f7fa}
+
+.nav{height:55px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 15px;border-bottom:1px solid #ddd}
+
+.nav button{border:0;background:transparent;color:#1685ff}
+
+.title{font-weight:bold;font-size:17px}
+
+.heading{font-size:26px;font-weight:bold;padding:20px 16px 10px}
+
+.list{overflow:auto;flex:1}
+
+.contact{width:100%;display:flex;align-items:center;gap:12px;padding:13px 16px;border:0;border-bottom:1px solid #eee;background:#f7f7fa;text-align:left}
+
+.avatar{width:48px;height:48px;border-radius:50%;background:#dce5ed;display:grid;place-items:center;font-size:24px;flex-shrink:0}
+
+.info{flex:1;min-width:0}
+
+.preview{color:#888;font-size:13px;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.chat{height:100%;display:flex;flex-direction:column;background:#f4f4f7}
+
+.messages{flex:1;overflow:auto;padding:15px 12px;display:flex;flex-direction:column;gap:10px}
+
+.day{align-self:center;background:#e4e4e8;color:#777;border-radius:15px;padding:5px 10px;font-size:11px}
+
+.row{display:flex;align-items:flex-end;gap:5px}
+
+.row.mine{justify-content:flex-end}
+
+.bubble{max-width:78%;padding:10px 13px;border-radius:17px;background:#e5e5ea;overflow-wrap:anywhere;white-space:pre-wrap}
+
+.mine .bubble{background:#1685ff;color:white}
+
+.kakao .mine .bubble{background:#fee500;color:#111}
+
+.kakao .row:not(.mine) .bubble{background:white}
+
+.msgtime{font-size:10px;color:#999}
+
+.composer{display:flex;gap:8px;padding:10px;background:#f7f7fa}
+
+.composer input{flex:1;min-width:0;border:1px solid #ddd;border-radius:22px;padding:11px}
+
+.send{border:0;border-radius:50%;width:40px;height:40px;background:#1685ff;color:white}
+
+.kakao .send{background:#fee500;color:#111}
+
+.photos{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:5px}
+
+.photo{aspect-ratio:1;border:0;font-size:36px}
+
+.wallchoices{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:16px}
+
+.wallchoice{height:110px;border:2px solid white;border-radius:15px}
+
+.call{height:100%;background:linear-gradient(#444,#111);color:white;display:flex;flex-direction:column;align-items:center;justify-content:space-around;text-align:center}
+
+.callavatar{font-size:65px}
+
+.call button{border:0;border-radius:50%;padding:20px;font-size:23px;background:#444;color:white}
+
+.call .end{background:#f33}
+
+.homebar{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);width:135px;height:5px;border-radius:5px;background:#111;z-index:10;cursor:pointer}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="phone" style="--wall:linear-gradient(145deg,#b7d8e9,#f6dce8,#b7c9ed)">
+
+<div class="status"><span id="status">9:41</span><div class="island"></div><span>● ▰ ▰</span></div>
+
+<main id="screen"></main>
+
+<div class="homebar" onclick="home()"></div>
+
+</div>
+
+<script>
+
+const screen=document.getElementById('screen');
+
+let app='home',chat=null,wall=0,sound=true,callInterval=null,seconds=0;
+
+const walls=[
+
+'linear-gradient(145deg,#b7d8e9,#f6dce8,#b7c9ed)',
+
+'linear-gradient(145deg,#f6b7c8,#f8e5bb,#c6d8f5)',
+
+'linear-gradient(145deg,#18284d,#805bb5,#f0a5c8)',
+
+'linear-gradient(145deg,#c6e8d3,#f5f0cf,#f2b8aa)',
+
+'linear-gradient(145deg,#eee,#c8d5df,#a0b8d0)',
+
+'linear-gradient(145deg,#111827,#374151,#6b7280)'
+
+];
+
+const data={
+
+sms:[
+
+{id:'s',name:'최수빈',avatar:'🐰',messages:[['them','뭐 해?'],['me','그냥 집이야 ㅋㅋ'],['them','나 지금 가도 돼?']]},
+
+{id:'b',name:'최범규',avatar:'🐻',messages:[['them','야 일어났어?'],['me','응 왜??']]},
+
+{id:'f',name:'친구',avatar:'🌷',messages:[['them','오늘 뭐 해?']]}
+
+],
+
+kakao:[
+
+{id:'s',name:'수빈 🐰',avatar:'🐰',messages:[['them','집 도착했어?'],['me','응응 방금!'],['them','잘 자고 내일 보자 ㅎㅎ']]},
+
+{id:'g',name:'우리들의 채팅방',avatar:'💬',messages:[['them','내일 몇 시에 만날까?'],['me','두 시 어때']]}
+
+]};
+
+function time(){return new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',hour12:true})}
+
+function updateTime(){document.getElementById('status').textContent=time();let d=document.getElementById('date'),t=document.getElementById('clock');if(d&&t){let n=new Date();d.textContent=n.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'});t.textContent=n.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',hour12:false})}}
+
+function home(){
+
+clearInterval(callInterval);app='home';chat=null;
+
+screen.innerHTML=`<div class="home" id="wallpaper">
+
+<div class="date" id="date"></div><div class="time" id="clock"></div><div style="font-size:13px;color:#445">오늘도 좋은 하루 ☁️</div>
+
+<div class="apps">
+
+<button class="app" onclick="openApp('sms')"><span class="icon green">💬</span>메시지</button>
+
+<button class="app" onclick="openApp('kakao')"><span class="icon yellow">💬</span>카카오톡</button>
+
+<button class="app" onclick="openApp('photos')"><span class="icon white">🌄</span>사진</button>
+
+<button class="app" onclick="openApp('settings')"><span class="icon white">⚙️</span>설정</button>
+
+<button class="app" onclick="call('전화','📞')"><span class="icon green">📞</span>전화</button>
+
+<button class="app" onclick="simple('메모','📝')"><span class="icon yellow">📝</span>메모</button>
+
+<button class="app" onclick="simple('음악','🎵')"><span class="icon pink">🎵</span>음악</button>
+
+<button class="app" onclick="simple('캘린더','📅')"><span class="icon white">📅</span>캘린더</button>
+
+<button class="app" onclick="openApp('wallpapers')"><span class="icon purple">🎨</span>배경화면</button>
+
+<button class="app" onclick="call('최수빈','🐰')"><span class="icon blue">☎️</span>전화하기</button>
+
+<button class="app" onclick="simple('Safari','🧭')"><span class="icon blue">🧭</span>Safari</button>
+
+<button class="app" onclick="simple('날씨','🌤️')"><span class="icon blue">🌤️</span>날씨</button>
+
+</div><div class="dock"><button onclick="call('전화','📞')">📞</button><button onclick="openApp('sms')">💬</button><button onclick="openApp('kakao')">🟡</button><button onclick="openApp('photos')">🖼️</button></div></div>`;
+
+document.getElementById('wallpaper').style.background=walls[wall];updateTime();
+
+}
+
+function openApp(name){clearInterval(callInterval);app=name;chat=null;if(name==='sms'||name==='kakao')list();else if(name==='photos')photos();else if(name==='wallpapers')wallpapers();else if(name==='settings')settings()}
+
+function list(){
+
+let kak=app==='kakao';
+
+screen.innerHTML=`<section class="panel"><div class="nav"><button onclick="home()">‹ 홈</button><span class="title">${kak?'카카오톡':'메시지'}</span><button onclick="newChat()">✎</button></div><div class="heading">${kak?'채팅':'메시지'}</div><div style="margin:0 15px 10px;padding:9px;background:#e8e8ed;border-radius:9px;color:#888">⌕ 검색</div><div class="list" id="list"></div></section>`;
+
+data[app].forEach(c=>{let b=document.createElement('button');b.className='contact';b.innerHTML=`<span class="avatar">${c.avatar}</span><span class="info"><b>${esc(c.name)}</b><div class="preview">${esc(c.messages.at(-1)?.[1]||'대화 시작하기')}</div></span>`;b.onclick=()=>openChat(c);document.getElementById('list').appendChild(b)});
+
+}
+
+function openChat(c){chat=c;renderChat()}
+
+function renderChat(){
+
+let kak=app==='kakao';
+
+screen.innerHTML=`<section class="chat ${kak?'kakao':''}"><div class="nav"><button onclick="list()">‹ ${kak?'채팅':'메시지'}</button><span class="title">${esc(chat.name)}</span><button onclick="call(chat.name,chat.avatar)">☎</button></div><div class="messages" id="messages"><div class="day">오늘</div></div><form class="composer" id="form"><input id="input" placeholder="메시지 입력..." autocomplete="off"><button class="send">↑</button></form></section>`;
+
+let area=document.getElementById('messages');chat.messages.forEach(m=>append(area,m));
+
+area.scrollTop=area.scrollHeight;
+
+document.getElementById('form').onsubmit=e=>{e.preventDefault();let input=document.getElementById('input'),v=input.value.trim();if(!v)return;let m=['me',v,time()];chat.messages.push(m);append(area,m);input.value='';area.scrollTop=area.scrollHeight;beep(740,.08)};
+
+}
+
+function append(area,m){let r=document.createElement('div');r.className='row '+(m[0]==='me'?'mine':'');let b=document.createElement('div');b.className='bubble';b.textContent=m[1];let t=document.createElement('span');t.className='msgtime';t.textContent=m[2]||time();if(m[0]==='me')r.append(t,b);else r.append(b,t);area.appendChild(r)}
+
+function photos(){
+
+screen.innerHTML=`<section class="panel"><div class="nav"><button onclick="home()">‹ 홈</button><span class="title">사진</span><button onclick="openApp('wallpapers')">배경</button></div><div class="heading">사진</div><p style="padding:0 16px;color:#888;font-size:13px">사진을 누르면 홈 배경이 바뀌어.</p><div class="photos" id="photos"></div></section>`;
+
+['🌊','🌅','🌸','🌌','🌿','☁️','🌻','🌃','🌈'].forEach((emoji,i)=>{let b=document.createElement('button');b.className='photo';b.style.background=walls[i%walls.length];b.textContent=emoji;b.onclick=()=>{wall=i%walls.length;home()};document.getElementById('photos').appendChild(b)});
+
+}
+
+function wallpapers(){
+
+screen.innerHTML=`<section class="panel"><div class="nav"><button onclick="home()">‹ 홈</button><span class="title">배경화면</span><button onclick="home()">완료</button></div><div class="heading">배경 선택</div><div class="wallchoices" id="choices"></div></section>`;
+
+walls.forEach((w,i)=>{let b=document.createElement('button');b.className='wallchoice';b.style.background=w;b.onclick=()=>{wall=i;home();beep(600,.08)};document.getElementById('choices').appendChild(b)});
+
+}
+
+function settings(){screen.innerHTML=`<section class="panel"><div class="nav"><button onclick="home()">‹ 홈</button><span class="title">설정</span><span></span></div><div class="heading">설정</div><div style="padding:15px"><div class="contact" style="border-radius:12px">🔊 효과음 <button onclick="sound=!sound;this.textContent=sound?'켜짐':'꺼짐'">${sound?'켜짐':'꺼짐'}</button></div><button class="contact" onclick="openApp('wallpapers')">🎨 배경화면 변경　›</button><p style="color:#888;font-size:12px">웹사이트 안에서만 작동하는 가상 휴대폰입니다.</p></div></section>`}
+
+function simple(name,emoji){screen.innerHTML=`<section class="panel"><div class="nav"><button onclick="home()">‹ 홈</button><span class="title">${name}</span><span></span></div><div style="text-align:center;padding:80px 15px"><div style="font-size:65px">${emoji}</div><h2>${name}</h2><p style="color:#888">예시 앱 화면입니다.</p><button onclick="home()" style="padding:12px 20px;border:0;border-radius:12px;background:#1685ff;color:white">홈으로</button></div></section>`}
+
+function newChat(){let n=prompt('대화 상대 이름을 입력해 주세요');if(!n?.trim())return;let c={id:Date.now(),name:n.trim(),avatar:'🙂',messages:[]};data[app].unshift(c);list();openChat(c)}
+
+function call(name,emoji){
+
+app='call';seconds=0;screen.innerHTML=`<section class="call"><div><div style="font-size:27px">${esc(name)}</div><p id="callstatus">전화 연결 중...</p><div class="callavatar">${emoji}</div></div><div><button onclick="beep(650,.1)">🔊</button> <button class="end" onclick="home()">📞</button> <button onclick="this.textContent=this.textContent==='🎙️'?'🔇':'🎙️'">🎙️</button><p style="font-size:12px;color:#bbb">가상 전화이며 실제 통화는 연결되지 않습니다.</p></div></section>`;
+
+beep(520,.12);setTimeout(()=>{let s=document.getElementById('callstatus');if(s&&app==='call')s.textContent='통화 중 · 00:00'},700);
+
+callInterval=setInterval(()=>{seconds++;let s=document.getElementById('callstatus');if(s&&app==='call')s.textContent='통화 중 · '+String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0')},1000);
+
+}
+
+let audio;
+
+function beep(freq=600,dur=.1){if(!sound)return;try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume();let o=audio.createOscillator(),g=audio.createGain();o.frequency.value=freq;g.gain.setValueAtTime(.05,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+dur);o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+dur)}catch(e){}}
+
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+home();setInterval(updateTime,30000);
+
+</script>
+
+</body>
+
+</html>
